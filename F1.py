@@ -8,17 +8,18 @@ r = requests.get(drivers)   #send GET request to API URL defined above as 'drive
 if r.status_code == 200:       #checks status code success, if error prints status code
     data = r.json()
 
-    dStandings = data['MRData']['StandingsTable']['StandingsLists'][0]['DriverStandings'] #extracting data, index set to 0 for whole season 
+    dStandings = data['MRData']['StandingsTable']['StandingsLists'][0]['DriverStandings'] #accesses data from within these tables in JSON structure within dStandings variable 
     for driverData in dStandings:       #loop through each driver record storing below variables
         position = driverData['position']
         givenName = driverData['Driver']['givenName'] 
         familyName = driverData['Driver']['familyName']
         code = driverData['Driver']['code']
         points = driverData['points']
+        wins = driverData['wins']
+        team = driverData['Constructors'][0]['name'] #access constructors list, first index related to driver
         
-        print(f"Pos: {position}")           #prints information for each driver with an empty line sperating them
-        print(f"Driver: {givenName} {familyName} {code}")
-        print(f"Points: {points}")
+        print(f"{position}. {code}. {givenName} {familyName}: {points} pts, {wins} wins. ")           
+        print(f"{team}")
         print()
 
 else:
