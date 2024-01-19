@@ -1,13 +1,30 @@
 import requests
 championship = '' #setting so below loop while requires break via correct user input
-while True:
-    year = input("Enter the season year: ") #user input stored as year
 
-    #sets year to lowercase to accept any case input from user. break ends program.
+#Welcome message
+print("--------------------------------------------------------------------------------------------------------------------")
+print("Welcome, this program harnesses the Ergast Developer API to access data relating the Formula One world championship.")
+print("This program supports requests from the first F1 season in 1950 to current day.")
+print("Enter a year below to retrieve driver or constructor championship information.")
+print()
+print("NOTE: Constructors Championship was not awarded until 1958, Drivers Championship was awarded from 1950.")
+print()
+
+#while loop to return user to start
+while True:
+    print("Type 'exit' to quit, or")
+    year = input("Enter year: ") #user input stored as year
+
+    #sets year to lowercase to accept any case input from user for exit. break ends program.
     if year.lower() == 'exit':
         print("Exiting program...")
         break
-        
+    
+    #convert year to integer and check its within data range, if not returns user to enter year again.
+    if int(year) not in range(1950,2024):
+        print(f"No data for {year}, please enter a year between 1950 and 2023 season.")
+        continue
+      
     championship = '' #setting so below loop while requires break via correct user input
 
     #while loop to ensure user enters valid input
@@ -25,6 +42,7 @@ while True:
             data = rd.json()  #store json data from request in data
 
             print(f"Retrieving {year} drivers championship standings...")
+            print()
 
             #extract data from json structure to dStandings, 0 index is for entire championship not rd1
             dStandings = data['MRData']['StandingsTable']['StandingsLists'][0]['DriverStandings']
@@ -47,28 +65,33 @@ while True:
             #print status code if not 200 OK
             print(f"ERROR {rd.status_code}: Unable to retrieve data.")
 
-    else:
-        #if user enters 2, GET request for constructors standings
-        constructors = f'https://ergast.com/api/f1/{year}/constructorStandings.json'
-        rc =requests.get(constructors)
+    #check if user selected constructors standings before 1958, if OK year runs GET request, else returns to enter year.
+    elif championship =='2':
+        if int(year) >= 1958:
+            constructors = f'https://ergast.com/api/f1/{year}/constructorStandings.json'
+            rc =requests.get(constructors)
 
-        if rc.status_code == 200:
-            data =rc.json()
+            if rc.status_code == 200:
+                data =rc.json()
 
-            print(f"Retrieving {year} constructors standings...")
-
-            #extract data to cStandings, loop through each constructor and extract data
-            cStandings = data['MRData']['StandingsTable']['StandingsLists'][0]['ConstructorStandings']
-            for constructorData in cStandings:
-                position = constructorData['position']
-                name = constructorData['Constructor']['name']
-                points = constructorData['points']
-                wins = constructorData['wins']
-
-                #output data to terminal, each constructor seperated by empty line
-                print(f'{position}. {name} - {points} pts, {wins} wins.')
+                print(f"Retrieving {year} constructors standings...")
                 print()
 
+                #extract data to cStandings, loop through each constructor and extract data
+                cStandings = data['MRData']['StandingsTable']['StandingsLists'][0]['ConstructorStandings']
+                for constructorData in cStandings:
+                    position = constructorData['position']
+                    name = constructorData['Constructor']['name']
+                    points = constructorData['points']
+                    wins = constructorData['wins']
+
+                    #output data to terminal, each constructor seperated by empty line
+                    print(f'{position}. {name} - {points} pts, {wins} wins.')
+                    print()
+
+            else:
+                #if status not 200 OK, print status code
+                print(f"ERROR {rc.status_code}: Unable to retrieve data.")
         else:
-            #if status not 200 OK, print status code
-            print(f"ERROR {rc.status_code}: Unable to retrieve data.")
+            #message if constructor championship selected for year before 1958
+            print("The Constructors Championship was not awarded until 1958.")
